@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Real-time Sync Football Futsal Timer</title>
+<style>
+  /* CSS Tambahan untuk menyembunyikan tombol ET & TO di mode yang tidak sesuai */
+  .et-controls, .to-controls { transition: opacity 0.3s; }
+  .hide-et, .hide-to { display: none !important; }
+</style>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- Bagian DISPLAY (Wajib di Halaman A dan B) -->
+<div data-time="timer">00:00</div>
+<div data-time="timer">00:00</div>
+<div data-time="timer">00:00</div>
+
+<!-- Contoh Display data-timetext Banyak Elemen (Singkat) -->
+<div data-time="timer" data-timetext="singkat">00:00</div>
+<div data-time="timer" data-timetext="singkat">00:00</div>
+<div data-time="timer" data-timetext="singkat">00:00</div>
+
+<!-- Contoh Display Additional Time Banyak Elemen -->
+<div data-time="addtionaltime"></div>
+<div data-time="addtionaltime"></div>
+<div data-time="addtionaltime"></div>
+
+<!-- Contoh Display Babak Banyak Elemen: 1ST, 2ST, ET1, ET2 -->
+<div data-time="round"></div>
+<div data-time="round"></div>
+<div data-time="round"></div>
+
+<!-- Contoh Display Time Out Banyak Elemen (Global) -->
+<div data-time="timeout"></div>
+<div data-time="timeout"></div>
+<div data-time="timeout"></div>
+
+<!-- Contoh Display Time Out Khusus Tim Home & Away -->
+<div>Time Out HOME</div>
+<div data-time="timeout" data-to="home"></div>
+<div data-time="timeout" data-to="home"></div>
+<br>
+<div>Time Out AWAY</div>
+<div data-time="timeout" data-to="away"></div>
+<div data-time="timeout" data-to="away"></div>
+<br>
+
+<!-- Bagian KONFIGURASI (Hanya Perlu di Halaman A, tapi tidak masalah ada di B) -->
+<div class="config-panel">
+  <label>Tipe Pertandingan:
+    <select id="matchType">
+      <option value="football">Sepak Bola (Waktu Maju)</option>
+      <option value="futsal">Futsal (Waktu Mundur)</option>
+    </select>
+  </label>
+  <br>
+  <label>Waktu Babak (menit):
+    <input type="number" id="halfTime" value="45">
+  </label>
+  <br>
+  <div id="etConfig">
+    <label>Extra Time (menit):
+      <input type="number" id="etTime" value="15">
+    </label>
+    <br>
+  </div>
+  <div id="toConfig">
+    <label>Time Out (menit):
+      <input type="number" id="toTime" value="1">
+    </label>
+  </div>
+</div>
+
+<!-- Bagian KONTROL (Hanya Halaman A yang punya tombol ini) -->
+<div class="control-panel">
+  <button onclick="controlAction('startHalf1')">Mulai Babak 1</button>
+  <button onclick="controlAction('halfTime')">Half Time</button>
+  <button onclick="controlAction('startHalf2')">Mulai Babak 2</button>
+  <button onclick="controlAction('fullTime')">Full Time</button>
+  <!-- Bungkus tombol ET dengan class khusus -->
+  <div class="et-controls" id="etControls">
+    <button onclick="controlAction('startET1')">Extra Time 1</button>
+    <button onclick="controlAction('startET2')">Extra Time 2</button>
+  </div>
+  <hr>
+  <button onclick="controlAction('resetMatch')">Reset</button>
+  <hr>
+  <!-- Tombol Time Out Futsal -->
+  <div class="to-controls" id="toControls">
+    <button onclick="controlAction('toHome')">Time Out (H)</button>
+    <button onclick="controlAction('toStop')">Stop Time Out</button>
+    <button onclick="controlAction('toAway')">Time Out (A)</button>
+    <hr>
+  </div>
+
+  <button onclick="adjustTime(5)">+5</button>
+  <button onclick="adjustTime(10)">+10</button>
+  <button onclick="adjustTime(20)">+20</button>
+  <hr>
+  <button onclick="adjustTime(-5)">-5</button>
+  <button onclick="adjustTime(-10)">-10</button>
+  <button onclick="adjustTime(-20)">-20</button>
+</div>
+
+<script>
+// ====== CONSTANTS & STATE ======
+const STORAGE_TIMER = 'football_timer_state';
+const STORAGE_CONFIG = 'football_timer_config';
+let animationFrameId = null;
+
+// Daftar class body yang akan di-toggle
+const BODY_PHASE_CLASSES = ['babak-1', 'half-time', 'babak-2', 'full-time', 'et-1', 'et-2', 'time-out-active'];
+
+// ====== INIT ======
+initConfig();
+startRenderLoop();
+
+// ====== CONFIG SYNC ======
+
+function getConfig() {
+  const raw = localStorage.getItem(STORAGE_CONFIG);
+  if (raw) {
+    try {
+      const parsed = JSON.parse(raw);
+      return {
+        matchType: typeof parsed.matchType === 'string' ? parsed.matchType : 'football',
+        halfTime: typeof parsed.halfTime === 'number' ? parsed.halfTime : 45,
+        etTime: typeof parsed.etTime === 'number' ? parsed.etTime : 15,
+        toTime: typeof parsed.toTime === 'number' ? parsed.toTime : 1
+      };
+    } catch (e) {}
+  }
+  return { matchType: 'football', halfTime: 45, etTime: 15, toTime: 1 };
+}
+
+function saveConfig(cfg) {
+  localStorage.setItem(STORAGE_CONFIG, JSON.stringify(cfg));
+}
+
+function initConfig() {
+  const typeSelect = document.getElementById('matchType');
+  const halfInput = document.getElementById('halfTime');
+  const etInput = document.getElementById('etTime');
+  const toInput = document.getElementById('toTime');
+  const cfg = getConfig();
+
+  if (typeSelect) {
+    typeSelect.value = cfg.matchType;
+    typeSelect.addEventListener('change', syncConfigFromInputs);
+  }
+  if (halfInput) {
+    halfInput.value = cfg.halfTime;
+    halfInput.addEventListener('input', syncConfigFromInputs);
+  }
+  if (etInput) {
+    etInput.value = cfg.etTime;
+    etInput.addEventListener('input', syncConfigFromInputs);
+  }
+  if (toInput) {
+    toInput.value = cfg.toTime;
+    toInput.addEventListener('input', syncConfigFromInputs);
+  }
+  
+  updateUIVisibility();
+}
+
+function syncConfigFromInputs() {
+  const typeSelect = document.getElementById('matchType');
+  const halfInput = document.getElementById('halfTime');
+  const etInput = document.getElementById('etTime');
+  const toInput = document.getElementById('toTime');
+  saveConfig({
+    matchType: typeSelect?.value || 'football',
+    halfTime: Math.max(0, parseInt(halfInput?.value) || 0),
+    etTime: Math.max(0, parseInt(etInput?.value) || 0),
+    toTime: Math.max(0, parseInt(toInput?.value) || 0)
+  });
+  updateUIVisibility();
+}
+
+function updateUIVisibility() {
+  const isFutsal = getConfig().matchType === 'futsal';
+  const etControls = document.getElementById('etControls');
+  const etConfig = document.getElementById('etConfig');
+  const toControls = document.getElementById('toControls');
+  const toConfig = document.getElementById('toConfig');
+  
+  if (etControls) isFutsal ? etControls.classList.add('hide-et') : etControls.classList.remove('hide-et');
+  if (etConfig) isFutsal ? etConfig.classList.add('hide-et') : etConfig.classList.remove('hide-et');
+  if (toControls) isFutsal ? toControls.classList.remove('hide-to') : toControls.classList.add('hide-to');
+  if (toConfig) isFutsal ? toConfig.classList.remove('hide-to') : toConfig.classList.add('hide-to');
+}
+
+// ====== CORE LOGIC ======
+
+function getState() {
+  const raw = localStorage.getItem(STORAGE_TIMER);
+  if (!raw) return getInitialState();
+  
+  const state = JSON.parse(raw);
+  
+  // Hitung Waktu Timer Utama
+  if (state.phase === 'running') {
+    const now = Date.now();
+    const diffMs = now - state.startTime;
+    const diffSec = Math.floor(diffMs / 1000);
+    state.currentElapsed = state.startOffset + state.pauseOffset + diffSec + state.manualOffset;
+  } else {
+    state.currentElapsed = state.startOffset + state.pauseOffset + state.manualOffset;
+  }
+
+  // Hitung Waktu Time Out
+  if (state.toPhase === 'running') {
+    const now = Date.now();
+    const diffMs = now - state.toStartTime;
+    const diffSec = Math.floor(diffMs / 1000);
+    state.toElapsed = diffSec;
+  } else {
+    state.toElapsed = 0;
+  }
+  
+  return state;
+}
+
+function saveState(newState) {
+  localStorage.setItem(STORAGE_TIMER, JSON.stringify(newState));
+  renderLoop(); 
+}
+
+// ====== RENDER ENGINE ======
+
+function startRenderLoop() {
+  function loop() {
+    renderLoop();
+    animationFrameId = requestAnimationFrame(loop);
+  }
+  animationFrameId = requestAnimationFrame(loop);
+}
+
+function renderLoop() {
+  const state = getState();
+  updateDisplay(state);
+  updateBodyClass(state); // <-- MENAMBAHKAN UPDATE CLASS BODY DI SINI
+}
+
+// ====== FUNGSI BARU: TOMBOL CLASS BODY ======
+function updateBodyClass(state) {
+  const body = document.body;
+  
+  // Hapus semua class terkait phase terlebih dahulu agar tidak tumpang tindih
+  BODY_PHASE_CLASSES.forEach(cls => body.classList.remove(cls));
+
+  // Tambahkan class berdasarkan state phaseName
+  switch (state.phaseName) {
+    case 'half1':
+      body.classList.add('babak-1');
+      break;
+    case 'halftime':
+    case 'etbreak':
+      body.classList.add('half-time');
+      break;
+    case 'half2':
+      body.classList.add('babak-2');
+      break;
+    case 'fulltime':
+    case 'etfull':
+      body.classList.add('full-time');
+      break;
+    case 'et1':
+      body.classList.add('et-1');
+      break;
+    case 'et2':
+      body.classList.add('et-2');
+      break;
+  }
+
+  // Tambahkan class time-out-active jika Time Out sedang berjalan
+  if (state.toPhase === 'running') {
+    body.classList.add('time-out-active');
+  }
+}
+
+function updateDisplay(state) {
+  const timerEls = document.querySelectorAll('[data-time="timer"]');
+  const addEls = document.querySelectorAll('[data-time="addtionaltime"]');
+  const roundEls = document.querySelectorAll('[data-time="round"]');
+  const toEls = document.querySelectorAll('[data-time="timeout"]');
+
+  let timeText = '';
+  let timeTextShort = '';
+  let addText = '';
+  let showActive = false;
+  let roundText = '';
+
+  const halfDur = getHalfDuration();
+  const etDur = getETDuration();
+  const isFutsal = getConfig().matchType === 'futsal';
+  
+  switch (state.phaseName) {
+    case 'half1': roundText = '1ST'; break;
+    case 'half2': roundText = '2ST'; break;
+    case 'et1': roundText = 'ET1'; break;
+    case 'et2': roundText = 'ET2'; break;
+    default: roundText = ''; break;
+  }
+
+  if (state.phaseName === 'halftime' || state.phaseName === 'etbreak') {
+    timeText = 'Half Time';
+    timeTextShort = 'HT';
+  } else if (state.phaseName === 'fulltime' || state.phaseName === 'etfull') {
+    timeText = 'Full Time';
+    timeTextShort = 'FT';
+  } else if (state.phaseName === 'idle') {
+    timeText = 'LIVE';
+    timeTextShort = timeText;
+  } else {
+    if (isFutsal) {
+      let isET = (state.phaseName === 'et1' || state.phaseName === 'et2');
+      let duration = isET ? etDur : halfDur;
+      const remainingTime = duration - state.currentElapsed;
+      
+      if (remainingTime > 0) {
+        timeText = formatTime(remainingTime);
+      } else {
+        timeText = '00:00';
+        const overtime = Math.abs(remainingTime);
+        const addMin = Math.floor(overtime / 60);
+        if (addMin > 0) {
+            addText = '+' + addMin;
+            showActive = true;
+        }
+      }
+    } else {
+      timeText = formatTime(Math.max(0, state.currentElapsed));
+      
+      let phaseEnd = 0;
+      if (state.phaseName === 'half1') phaseEnd = halfDur;
+      else if (state.phaseName === 'half2') phaseEnd = halfDur * 2;
+      else if (state.phaseName === 'et1') phaseEnd = (halfDur * 2) + etDur;
+      else if (state.phaseName === 'et2') phaseEnd = (halfDur * 2) + (etDur * 2);
+
+      if (state.currentElapsed > phaseEnd) {
+        const overtime = state.currentElapsed - phaseEnd;
+        const addMin = Math.floor(overtime / 60);
+        if (addMin > 0) {
+            addText = '+' + addMin;
+            showActive = true;
+        }
+      }
+    }
+  }
+  
+  timeTextShort = timeTextShort || timeText;
+
+  timerEls.forEach(el => {
+    const isShort = el.hasAttribute('data-timetext') && el.getAttribute('data-timetext') === 'singkat';
+    const targetText = isShort ? timeTextShort : timeText;
+    if (el.textContent !== targetText) el.textContent = targetText;
+  });
+
+  addEls.forEach(el => {
+    const isCurrentlyActive = el.classList.contains('active');
+    if (el.textContent !== addText) el.textContent = addText;
+    if (showActive && !isCurrentlyActive) el.classList.add('active');
+    else if (!showActive && isCurrentlyActive) el.classList.remove('active');
+  });
+
+  roundEls.forEach(el => {
+    if (el.textContent !== roundText) el.textContent = roundText;
+  });
+
+    let toText = '';
+    let toActive = false;
+    const toDuration = getTODuration();
+
+    if (state.toPhase === 'running') {
+      const remaining = toDuration - state.toElapsed;
+      toText = remaining > 0 ? formatTime(remaining) : '00:00';
+      toActive = true; 
+    }
+
+    toEls.forEach(el => {
+      const targetTeam = el.getAttribute('data-to');
+      let isMatchTeam = false;
+      
+      if (targetTeam === 'home') {
+        isMatchTeam = (state.toTeam === 'H');
+      } else if (targetTeam === 'away') {
+        isMatchTeam = (state.toTeam === 'A');
+      } else {
+        isMatchTeam = true;
+      }
+
+      const currentText = isMatchTeam ? toText : '';
+      if (el.textContent !== currentText) {
+        el.textContent = currentText;
+      }
+
+      const isCurrentlyActive = el.classList.contains('active');
+      const shouldBeActive = isMatchTeam && toActive;
+      
+      if (shouldBeActive && !isCurrentlyActive) {
+        el.classList.add('active');
+      } else if (!shouldBeActive && isCurrentlyActive) {
+        el.classList.remove('active');
+      }
+    });
+}
+
+// ====== CONTROLS ======
+
+function controlAction(action) {
+  const currentState = getState();
+  const now = Date.now();
+  const halfDur = getHalfDuration();
+  const etDur = getETDuration();
+  const isFutsal = getConfig().matchType === 'futsal';
+
+  let newState = { ...currentState };
+  
+  if (action === 'toHome' || action === 'toAway') {
+    if (currentState.phase === 'running') {
+      const diffMs = now - currentState.startTime;
+      const diffSec = Math.floor(diffMs / 1000);
+      
+      newState.phase = 'paused';
+      newState.pauseOffset = currentState.startOffset + currentState.pauseOffset + diffSec + currentState.manualOffset;
+      newState.startOffset = 0;
+      newState.startTime = now;
+      newState.manualOffset = 0;
+    }
+    
+    newState.toPhase = 'running';
+    newState.toStartTime = now;
+    newState.toTeam = action === 'toHome' ? 'H' : 'A';
+    
+    saveState(newState);
+    return;
+  }
+
+  if (action === 'toStop') {
+    newState.toPhase = 'stopped';
+    newState.toTeam = null;
+
+    if (currentState.phase === 'paused' && currentState.toPhase === 'running') {
+      newState.phase = 'running';
+      newState.startTime = now; 
+    }
+    
+    saveState(newState);
+    return;
+  }
+
+  newState.startTime = now;
+  newState.manualOffset = 0;
+  newState.pauseOffset = 0; 
+
+  switch (action) {
+    case 'resetMatch':
+      newState = getInitialState();
+      break;
+      
+    case 'startHalf1':
+      newState.phase = 'running';
+      newState.phaseName = 'half1';
+      newState.startOffset = 0; 
+      break;
+
+    case 'halfTime':
+      newState.phase = 'stopped';
+      if (currentState.phaseName === 'half1') {
+        newState.phaseName = 'halftime';
+        newState.pauseOffset = currentState.currentElapsed; 
+      } else if (currentState.phaseName === 'et1') {
+        newState.phaseName = 'etbreak';
+        newState.pauseOffset = currentState.currentElapsed;
+      }
+      break;
+
+    case 'startHalf2':
+      newState.phase = 'running';
+      newState.phaseName = 'half2';
+      if (isFutsal) {
+        newState.startOffset = 0; 
+      } else {
+        newState.startOffset = halfDur; 
+      }
+      break;
+
+    case 'fullTime':
+      newState.phase = 'stopped';
+      if (currentState.phaseName === 'half2') {
+        newState.phaseName = 'fulltime';
+        newState.pauseOffset = currentState.currentElapsed;
+      } else if (currentState.phaseName === 'et2') {
+        newState.phaseName = 'etfull';
+        newState.pauseOffset = currentState.currentElapsed;
+      }
+      break;
+
+    case 'startET1':
+      newState.phase = 'running';
+      newState.phaseName = 'et1';
+      if (isFutsal) {
+        newState.startOffset = 0; 
+      } else {
+        newState.startOffset = halfDur * 2; 
+      }
+      break;
+
+    case 'startET2':
+      newState.phase = 'running';
+      newState.phaseName = 'et2';
+      if (isFutsal) {
+        newState.startOffset = 0; 
+      } else {
+        newState.startOffset = (halfDur * 2) + etDur; 
+      }
+      break;
+  }
+
+  saveState(newState);
+}
+
+function adjustTime(seconds) {
+  const currentState = getState();
+  if (currentState.phaseName === 'idle') return;
+
+  currentState.manualOffset = (currentState.manualOffset || 0) + seconds;
+  saveState(currentState);
+}
+
+// ====== HELPERS ======
+
+function getInitialState() {
+  return {
+    phase: 'stopped',
+    phaseName: 'idle',
+    startTime: 0,
+    startOffset: 0,
+    pauseOffset: 0, 
+    manualOffset: 0,
+    toPhase: 'stopped',
+    toStartTime: 0,
+    toTeam: null
+  };
+}
+
+function getHalfDuration() {
+  return getConfig().halfTime * 60;
+}
+
+function getETDuration() {
+  return getConfig().etTime * 60;
+}
+
+function getTODuration() {
+  return getConfig().toTime * 60;
+}
+
+function formatTime(totalSeconds) {
+  const absSec = Math.abs(totalSeconds);
+  const m = Math.floor(absSec / 60);
+  const s = absSec % 60;
+  return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+}
+
+window.addEventListener('storage', (e) => {
+  if (e.key === STORAGE_TIMER || e.key === STORAGE_CONFIG) {
+    renderLoop();
+    updateUIVisibility(); 
+  }
+});
+</script>
+</body>
+</html>

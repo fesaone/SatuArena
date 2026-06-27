@@ -1,0 +1,71 @@
+.et-controls,
+.to-controls {
+    transition: opacity 0.3s;
+}
+
+.hide-et,
+.hide-to {
+    display: none !important;
+}
+.timer-panel {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 24px;
+    border: 1px solid #ccc;
+    padding: 14px;
+    border-radius: 6px;
+    gap: 10px 14px;
+    color: #000;
+    background-color: #fff;
+}
+
+.grid {
+    position: relative;
+    box-sizing: border-box;
+    display: grid;
+    grid-template-columns: repeat(1, 1fr);
+    gap: 10px 14px;
+
+    &.col-2 {grid-template-columns: repeat(2, 1fr);}
+    &.col-3 {grid-template-columns: repeat(3, 1fr);}
+    &.col-4 {grid-template-columns: repeat(4, 1fr);}
+
+    &.col-goal {grid-template-columns: 1fr auto 1fr 1fr auto 1fr ; align-items: center;}
+
+    .full {
+        grid-column: -1/1;
+    }
+
+    label {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+    }
+    input, select {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        outline: none;
+        margin-top: 5px;
+    }
+    button {
+        padding: 10px 5px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+    }
+    button[onclick="controlAction('resetMatch')"] {
+        background-color: red;
+        border-color: red;
+        color: #fff;
+    }
+}
+.hr {
+    margin: 0;
+    padding: 0;
+    border-width: 0;
+    border-bottom-width: 1px;
+    border-color: #ccc;
+    margin-top: 5px;
+    margin-bottom: 5px;
+}

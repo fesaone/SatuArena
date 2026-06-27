@@ -1,0 +1,185 @@
+const STORAGE_JERSEY = 'football_jersey_state';
+
+const PRESET_CATEGORIES = {
+    'Merah': [
+        '#B71C1C','#C62828','#D32F2F','#E53935',
+        '#E63946','#F44336','#EF5350','#E57373',
+        '#FF1744','#D50000','#FF5252','#FF8A80',
+        '#AD1457','#C2185B','#880E4F','#7B1A2E',
+        '#6D0012','#4A0000'
+    ],
+    'Biru': [
+        '#0D47A1','#103557','#01579B','#0277BD',
+        '#0288D1','#1565C0','#1976D2','#1E88E5',
+        '#2196F3','#42A5F5','#64B5F6','#90CAF9',
+        '#283593','#303F9F','#3949AB','#3F51B5',
+        '#5C6BC0','#7986CB'
+    ],
+    'Putih': [
+        '#FFFFFF','#FAFAFA','#F5F5F5','#F0F0F0',
+        '#EEEEEE','#E8E8E8','#E0E0E0','#D6D6D6',
+        '#FAF0E6','#FFF8E1','#FFFDE7','#FBE9E7',
+        '#F3E5F5','#E8EAF6','#E0F2F1','#FCE4EC',
+        '#F1F8E9','#ECEFF1'
+    ],
+    'Kuning': [
+        '#F57F17','#F9A825','#FBC02D','#FFD600',
+        '#FFC107','#FFCA28','#FFD54F','#FFEB3B',
+        '#FFEE58','#FFF176','#FFF59D','#FFFDE7',
+        '#FF8F00','#FFAB00','#FFB300','#FFC400',
+        '#FFD740','#FFE57F'
+    ],
+    'Hijau': [
+        '#003300','#004D40','#00695C','#1B5E20',
+        '#2E7D32','#006064','#00838F','#00796B',
+        '#388E3C','#43A047','#009688','#00897B',
+        '#4CAF50','#26A69A','#66BB6A','#4DB6AC',
+        '#81C784','#80CBC4'
+    ],
+    'Hitam': [
+        '#000000','#0A0A0A','#0F0F0F','#141414',
+        '#1A1A1A','#1C1C1C','#212121','#263238',
+        '#2C2C2C','#333333','#37474F','#424242',
+        '#484848','#505050','#546E7A','#607D8B',
+        '#1A1A2E','#16213E'
+    ],
+    'Orange': [
+        '#BF360C','#DD2C00','#E65100','#E64A19',
+        '#F4511E','#FF3D00','#FF5722','#FF6D00',
+        '#FF6E40','#FF7043','#FF8A65','#FF9100',
+        '#FF9800','#FFA726','#FFAB40','#FFB74D',
+        '#FB8C00','#F57C00'
+    ],
+    'Ungu': [
+        '#4A148C','#311B92','#4527A0','#512DA8',
+        '#5E35B1','#6A1B9A','#7B1FA2','#8E24AA',
+        '#9C27B0','#AB47BC','#673AB7','#7E57C2',
+        '#9575CD','#B39DDB','#CE93D8','#E1BEE7',
+        '#BA68C8','#B388FF'
+    ],
+    'Coklat': [
+        '#3E2723','#4E342E','#5D4037','#6D4C41',
+        '#795548','#8D6E63','#A1887F','#BCAAA4',
+        '#614B3A','#7B5B3A','#8B6914','#8B7355',
+        '#5C4033','#704214','#7B3F00','#8B4513',
+        '#A0522D','#CD853F'
+    ],
+    'Pink': [
+        '#880E4F','#AD1457','#C2185B','#D81B60',
+        '#E91E63','#EC407A','#F06292','#F48FB1',
+        '#F8BBD0','#FCE4EC','#FF4081','#FF80AB',
+        '#FF1493','#FF69B4','#FFB6C1','#FFC0CB',
+        '#FFCDD2','#FCE4EC'
+    ],
+    'Navy': [
+        '#000020','#000040','#000060','#0A0A2A',
+        '#0D1B2A','#1B263B','#1B3A4B','#102A43',
+        '#183B56','#1A3660','#1C3D5A','#1F4068',
+        '#224272','#243B53','#253C59','#283655',
+        '#2C3E50','#34495E'
+    ],
+    'Abu/Emas': [
+        '#9E9E9E','#BDBDBD','#CFD8DC','#B0BEC5',
+        '#C0C0C0','#A9A9A9','#808080','#D4AF37',
+        '#C5A028','#B8860B','#DAA520','#FFD700',
+        '#C9B037','#BFA14A','#A68B3C','#8B7D3C',
+        '#6B6B6B','#78909C'
+    ],
+    'Pastel': [
+        '#FFCDD2','#F8BBD0','#E1BEE7','#D1C4E9',
+        '#C5CAE9','#BBDEFB','#B3E5FC','#B2EBF2',
+        '#B2DFDB','#C8E6C9','#DCEDC8','#F0F4C3',
+        '#FFF9C4','#FFFDE7','#FFF8E1','#FFECB3',
+        '#FFE0B2','#FFDCC8'
+    ],
+    'Jersey Populer': [
+        '#E63946','#103557','#FFFFFF','#000000',
+        '#D50000','#0D47A1','#FFD600','#004D40',
+        '#FF6D00','#7B1FA2','#1B263B','#D4AF37',
+        '#00695C','#F4511E','#3E2723','#EC407A',
+        '#283593','#37474F'
+    ]
+};
+
+const CATEGORY_NAMES = Object.keys(PRESET_CATEGORIES);
+const activeTab = { home: 'Jersey Populer', away: 'Jersey Populer' };
+
+initJerseySystem();
+
+function initJerseySystem() {
+    renderTabs();
+    renderPresets('home');
+    renderPresets('away');
+    renderJersey();
+    fillInputsFromStorage();
+    window.addEventListener('storage', (e) => {
+        if (e.key === STORAGE_JERSEY) renderJersey();
+    });
+}
+
+function renderTabs() {
+    ['home','away'].forEach(team => {
+        const container = document.getElementById('tab' + team.charAt(0).toUpperCase() + team.slice(1));
+        if (!container) return;
+        CATEGORY_NAMES.forEach(name => {
+            const btn = document.createElement('button');
+            btn.textContent = name;
+            if (name === activeTab[team]) btn.classList.add('active');
+            btn.addEventListener('click', () => {
+                activeTab[team] = name;
+                container.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                renderPresets(team);
+            });
+            container.appendChild(btn);
+        });
+    });
+}
+
+function renderPresets(team) {
+    const container = document.getElementById('preset' + team.charAt(0).toUpperCase() + team.slice(1));
+    if (!container) return;
+    container.innerHTML = '';
+    PRESET_CATEGORIES[activeTab[team]].forEach(color => {
+        const btn = document.createElement('div');
+        btn.style.background = color;
+        btn.title = color;
+        btn.addEventListener('click', () => updateJersey(team, color));
+        container.appendChild(btn);
+    });
+}
+
+function getJerseyState() {
+    const raw = localStorage.getItem(STORAGE_JERSEY);
+    if (!raw) return { home: '#E63946', away: '#103557' };
+    return JSON.parse(raw);
+}
+
+function saveJerseyState(state) {
+    localStorage.setItem(STORAGE_JERSEY, JSON.stringify(state));
+    renderJersey();
+}
+
+function renderJersey() {
+    const state = getJerseyState();
+    const styleEl = document.getElementById('jersey-css-vars');
+    if (styleEl) {
+        styleEl.textContent = ':root {\n    --jersey-home: ' + state.home + ';\n    --jersey-away: ' + state.away + ';\n}';
+    }
+}
+
+function updateJersey(team, value) {
+    const state = getJerseyState();
+    state[team] = value;
+    saveJerseyState(state);
+    const picker = document.getElementById(team + 'Jersey');
+    if (picker && document.activeElement !== picker) picker.value = value;
+}
+
+function fillInputsFromStorage() {
+    const state = getJerseyState();
+    ['home','away'].forEach(team => {
+        const el = document.getElementById(team + 'Jersey');
+        if (el && document.activeElement !== el) el.value = state[team];
+    });
+}

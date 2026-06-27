@@ -1,0 +1,12 @@
+@font-face {
+    font-family: 'FWC2026N';
+    src: url('/fonts/FWC2026-NormalRegular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'FWC2026';
+    src: url('/fonts/FWC2026-UltraCondensedBold.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}

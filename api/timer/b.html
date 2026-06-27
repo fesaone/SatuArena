@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Real-time Sync Football Futsal Timer</title>
+<style>
+  /* CSS Tambahan untuk menyembunyikan tombol ET & TO di mode yang tidak sesuai */
+  .et-controls, .to-controls { transition: opacity 0.3s; }
+  .hide-et, .hide-to { display: none !important; }
+</style>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- Bagian DISPLAY (Wajib di Halaman A dan B) -->
+<div data-time="timer">00:00</div>
+<div data-time="timer">00:00</div>
+<div data-time="timer">00:00</div>
+<br>
+<!-- Contoh Display data-timetext Banyak Elemen (Singkat) -->
+<div data-time="timer" data-timetext="singkat">00:00</div>
+<div data-time="timer" data-timetext="singkat">00:00</div>
+<div data-time="timer" data-timetext="singkat">00:00</div>
+<br>
+<!-- Contoh Display Additional Time Banyak Elemen -->
+<div data-time="addtionaltime"></div>
+<div data-time="addtionaltime"></div>
+<div data-time="addtionaltime"></div>
+<br>
+<!-- Contoh Display Babak Banyak Elemen: 1ST, 2ST, ET1, ET2 -->
+<div data-time="round"></div>
+<div data-time="round"></div>
+<div data-time="round"></div>
+<br>
+<!-- Contoh Display Time Out Banyak Elemen -->
+<div data-time="timeout"></div>
+<div data-time="timeout"></div>
+<div data-time="timeout"></div>
+
+<script src="script.js"></script>
+</body>
+</html>

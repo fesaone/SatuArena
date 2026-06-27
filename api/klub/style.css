@@ -1,0 +1,198 @@
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+        font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        background: #0b0b14;
+        color: #e0e0e0;
+        padding: 20px;
+        line-height: 1.5;
+    }
+
+    /* =========================================================
+       BAGIAN DISPLAY (Bebas diubah tata letaknya tanpa ubah JS)
+       ========================================================= */
+    .scorecard {
+        background: linear-gradient(160deg, #151525 0%, #1a1a2e 100%);
+        border: 1px solid #2a2a40;
+        border-radius: 12px;
+        padding: 20px 30px;
+        margin-bottom: 24px;
+        position: relative;
+        overflow: hidden;
+        border-top: 4px solid #c0392b;
+    }
+    .sc-header {
+        display: flex; align-items: center; gap: 14px;
+        margin-bottom: 20px; padding-bottom: 14px; border-bottom: 1px solid #2a2a40;
+    }
+    /* Target img berdasarkan data-event="logo" */
+    img[data-event="logo"] { width: 44px; height: 44px; object-fit: contain; background: #0b0b14; padding: 4px; border-radius: 6px; }
+    .sc-header-text { display: flex; flex-direction: column; gap: 2px; }
+    div[data-event="name"] { font-size: 1.15rem; font-weight: 700; color: #fff; }
+    div[data-event="season"] { font-size: 0.8rem; color: #777; }
+    
+    .sc-info { text-align: center; margin-bottom: 18px; font-size: 0.82rem; color: #888; letter-spacing: 1px; text-transform: uppercase; display: flex; justify-content: center; gap: 10px; }
+    div[data-event="babak"], div[data-event="kategori"] { display: inline-block; }
+    
+    .sc-body { display: flex; align-items: center; justify-content: center; gap: 24px; }
+    .sc-team { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+    .sc-team.away { align-items: center; } /* Bisa diubah ke flex-end jika mau rata kanan */
+    img[data-klub-logo] { width: 76px; height: 76px; object-fit: contain; background: #0b0b14; padding: 5px; border-radius: 8px; }
+    div[data-klub-skt] { font-size: 2.2rem; font-weight: 900; letter-spacing: 2px; line-height: 1.1; }
+    div[data-klub-name] { font-size: 0.82rem; color: #999; }
+    .sc-vs { font-size: 0.9rem; font-weight: 800; color: #444; letter-spacing: 3px; padding-top: 28px; }
+    .sc-empty { text-align: center; padding: 40px 0; color: #444; font-style: italic; display: none; }
+
+
+    /* === TOOLBAR === */
+    .toolbar { display: flex; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+    .btn {
+        padding: 9px 18px; border: 1px solid #333; border-radius: 6px;
+        background: #1a1a2e; color: #ddd; font-size: 0.84rem; font-weight: 600;
+        cursor: pointer; transition: all 0.15s; letter-spacing: 0.3px;
+    }
+    .btn:hover { background: #252540; border-color: #555; }
+    .btn:active { transform: scale(0.97); }
+    .btn-red { background: #c0392b; border-color: #c0392b; color: #fff; }
+    .btn-red:hover { background: #a93226; }
+    .btn-green { background: #1a7a42; border-color: #1a7a42; color: #fff; }
+    .btn-green:hover { background: #14633a; }
+    .btn-sm { padding: 5px 12px; font-size: 0.76rem; }
+    .btn-dark-red { background: #6b1414; border-color: #6b1414; color: #fff; }
+    .btn-dark-red:hover { background: #4a0e0e; }
+    .btn-blue { background: #1a4a7a; border-color: #1a4a7a; color: #fff; }
+    .btn-blue:hover { background: #143a60; }
+
+    /* === TABLE LIST === */
+    .list-header { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1.5px; color: #555; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid #222; }
+    table { width: 100%; border-collapse: collapse; }
+    th { text-align: left; padding: 10px 12px; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 1px; color: #666; border-bottom: 1px solid #222; background: #0f0f1a; }
+    th:last-child { text-align: right; }
+    td { padding: 12px; border-bottom: 1px solid #1a1a2a; vertical-align: middle; }
+    tr:hover td { background: #12121f; }
+    tr.active td { background: #1a1025; border-bottom-color: #3a1a30; }
+    .td-team { display: flex; align-items: center; gap: 10px; }
+    .td-team.away-team { justify-content: flex-end; }
+    .td-team img { width: 28px; height: 28px; object-fit: contain; background: #0b0b14; padding: 2px; border-radius: 4px; }
+    .td-team-info span { display: block; }
+    .td-skt { font-weight: 800; font-size: 0.9rem; }
+    .td-name { font-size: 0.72rem; color: #777; }
+    .td-vs { text-align: center; color: #333; font-weight: 700; font-size: 0.75rem; letter-spacing: 2px; width: 40px; }
+    .td-meta { color: #666; font-size: 0.82rem; white-space: nowrap; }
+    .td-actions { text-align: right; white-space: nowrap; }
+    .td-actions .btn { margin-left: 4px; }
+    .empty-row td { text-align: center; padding: 40px 10px !important; color: #333; font-style: italic; font-size: 0.9rem; }
+
+    /* === KLUB LIST === */
+    .klub-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid #1a1a2a; }
+    .klub-chip {
+        background: #1a1a2e; border: 1px solid #2a2a40; border-radius: 6px;
+        padding: 6px 12px; display: flex; align-items: center; gap: 8px; font-size: 0.8rem;
+    }
+    .klub-chip img { width: 22px; height: 22px; object-fit: contain; border-radius: 4px; background: #0b0b14; padding: 2px; }
+    .klub-chip .chip-name { font-weight: 700; }
+    .klub-chip .chip-skt { color: #888; font-size: 0.72rem; }
+    .klub-chip button {
+        background: none; border: none; color: #555; cursor: pointer; font-size: 1rem; line-height: 1; margin-left: 4px;
+    }
+    .klub-chip button:hover { color: #e74c3c; }
+
+    /* === MODAL === */
+    .modal-bg {
+        display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75);
+        backdrop-filter: blur(3px); z-index: 1000; justify-content: center; align-items: flex-start; padding: 40px 16px; overflow-y: auto;
+    }
+    .modal-bg.open { display: flex; }
+    .modal-box {
+        background: #161625; border: 1px solid #2a2a40; border-radius: 10px;
+        width: 100%; max-width: 520px; padding: 24px; position: relative;
+        animation: slideIn 0.2s ease;
+    }
+    .modal-sm { max-width: 380px; }
+    @keyframes slideIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+    .modal-x { position: absolute; top: 12px; right: 14px; background: none; border: none; color: #555; font-size: 1.4rem; cursor: pointer; line-height: 1; }
+    .modal-x:hover { color: #fff; }
+    .modal-title { font-size: 0.95rem; font-weight: 700; margin-bottom: 20px; padding-right: 30px; letter-spacing: 0.5px; }
+    .modal-foot { display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px; padding-top: 16px; border-top: 1px solid #222; }
+
+    /* === FORM === */
+    .form-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: #666; margin-bottom: 12px; display: block; }
+    .fg { margin-bottom: 14px; }
+    .fg label { display: block; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.8px; color: #888; margin-bottom: 5px; }
+    .fg input, .fg select {
+        width: 100%; padding: 9px 12px; border: 1px solid #333; border-radius: 6px;
+        background: #0b0b14; color: #f0f0f0; font-size: 0.9rem; font-family: inherit; outline: none; transition: border 0.15s;
+    }
+    .fg input:focus, .fg select:focus { border-color: #c0392b; }
+    .fg input::placeholder { color: #444; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .divider { height: 1px; background: #222; margin: 18px 0; }
+    .del-preview { background: #0b0b14; border: 1px solid #2a2a40; border-radius: 6px; padding: 10px; text-align: center; color: #e74c3c; font-weight: 600; margin-top: 10px; }
+
+    @media (max-width: 600px) {
+        body { padding: 12px; }
+        .scorecard { padding: 16px; }
+        div[data-klub-skt] { font-size: 1.5rem; }
+        img[data-klub-logo] { width: 50px; height: 50px; }
+        .form-row { grid-template-columns: 1fr; }
+        table { font-size: 0.85rem; }
+        th, td { padding: 8px 6px; }
+        .td-name { display: none; }
+        .toolbar { gap: 6px; }
+        .btn { padding: 8px 12px; font-size: 0.78rem; }
+    }
+
+
+        .tab-container {
+        width: 100%;
+        margin-top: 15px;
+    }
+    .tab-nav {
+        display: flex;
+        border-bottom: 2px solid #2c3e50;
+        background: #000;
+        border-radius: 8px 8px 0 0;
+        overflow: hidden;
+    }
+    .tab-btn {
+        flex: 1;
+        padding: 12px 20px;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        font-weight: bold;
+        font-size: 0.95rem;
+        color: #555;
+        transition: all 0.2s ease;
+        border-bottom: 3px solid transparent;
+        margin-bottom: -2px;
+    }
+    .tab-btn:hover {
+        background: #000;
+        color: #fff;
+    }
+    .tab-btn.active {
+        color: #000;
+        border-bottom-color: #fff;
+        background: gray;
+    }
+    .tab-content {
+        display: none;
+        padding: 20px;
+        background: #000;
+        border: 1px solid #111;
+        border-top: none;
+        border-radius: 0 0 8px 8px;
+        animation: fadeIn 0.3s ease;
+    }
+    .tab-content.active {
+        display: block;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-5px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* Menghapus margin list-header default jika ada di style.css agar cocok dengan tab */
+    .tab-content .list-header {
+        margin-top: 0;
+    }

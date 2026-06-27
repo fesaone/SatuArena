@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Real-time Sync Football Data</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- =========================================================
+     BAGIAN DISPLAY (Wajib ada di Halaman A dan B)
+     Anda bebas mengubah susunan HTML & CSS di bawah ini.
+     Script akan secara otomatis mencari elemen berdasarkan 
+     data-event dan data-klub lalu mengisi datanya.
+     ========================================================= -->
+<section class="scorecard">
+    <div class="sc-header">
+        <img data-event="logo" src="" alt="Logo Event">
+        <div class="sc-header-text">
+            <div data-event="name"></div>
+            <div data-event="season"></div>
+        </div>
+    </div>
+    
+    <div class="sc-info">
+        <div data-event="babak"></div>
+        <div data-event="kategori"></div>
+    </div>
+
+    <div class="sc-body">
+        <div class="sc-team home">
+            <img data-klub-logo="home" src="" alt="Logo Home">
+            <div data-klub-skt="home"></div>
+            <div data-klub-name="home"></div>
+        </div>
+        <div class="sc-vs">VS</div>
+        <div class="sc-team away">
+            <img data-klub-logo="away" src="" alt="Logo Away">
+            <div data-klub-skt="away"></div>
+            <div data-klub-name="away"></div>
+        </div>
+    </div>
+    <div class="sc-empty" id="scEmpty">Pilih pertandingan dari daftar untuk ditampilkan</div>
+</section>
+
+<!-- ============ TOOLBAR (Hanya Halaman A) ============ -->
+<div class="toolbar">
+    <button class="btn btn-red" onclick="openEvent()">Konfigurasi Event</button>
+    <button class="btn btn-blue" onclick="openKlub()">Tambah Klub</button>
+    <button class="btn btn-green" onclick="openMatch()">Tambah Pertandingan</button>
+</div>
+
+<!-- ============ DAFTAR KLUB (Hanya Halaman A) ============ -->
+<div class="list-header">Data Klub Tersimpan</div>
+<div class="klub-grid" id="klubListChips">
+    <div style="color:#333; font-size:0.85rem; font-style:italic; padding: 6px 0;">Belum ada klub.</div>
+</div>
+
+<!-- ============ DAFTAR PERTANDINGAN (Hanya Halaman A) ============ -->
+<div class="list-header">Daftar Pertandingan</div>
+<table>
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Home</th>
+            <th></th>
+            <th>Away</th>
+            <th>Babak</th>
+            <th>Kategori</th>
+            <th>Aksi</th>
+        </tr>
+    </thead>
+    <tbody id="matchListBody"></tbody>
+</table>
+
+<!-- ============ POPUP: KONFIGURASI EVENT ============ -->
+<div class="modal-bg" id="mEvent">
+    <div class="modal-box">
+        <button class="modal-x" onclick="closeModal('mEvent')">&times;</button>
+        <div class="modal-title">Konfigurasi Event</div>
+        <span class="form-label">Event</span>
+        <div class="fg"><label>Nama Event</label><input type="text" id="eName" placeholder="Piala Indonesia"></div>
+        <div class="fg"><label>Season</label><input type="text" id="eSeason" placeholder="2026/2027"></div>
+        <div class="fg"><label>URL Logo</label><input type="text" id="eLogo" placeholder="https://..."></div>
+        <div class="modal-foot">
+            <button class="btn" onclick="closeModal('mEvent')">Batal</button>
+            <button class="btn btn-red" onclick="saveEvent()">Simpan</button>
+        </div>
+    </div>
+</div>
+
+<!-- ============ POPUP: TAMBAH/EDIT KLUB ============ -->
+<div class="modal-bg" id="mKlub">
+    <div class="modal-box">
+        <button class="modal-x" onclick="closeModal('mKlub')">&times;</button>
+        <div class="modal-title" id="klubTitle">Tambah Klub</div>
+        <span class="form-label">Klub</span>
+        <div class="fg"><label>Nama Klub</label><input type="text" id="kName" placeholder="Persija Jakarta"></div>
+        <div class="fg"><label>Singkatan</label><input type="text" id="kSkt" placeholder="PSJ" style="text-transform:uppercase;"></div>
+        <div class="fg"><label>URL Logo</label><input type="text" id="kLogo" placeholder="https://..."></div>
+        <div class="modal-foot">
+            <button class="btn" onclick="closeModal('mKlub')">Batal</button>
+            <button class="btn btn-blue" onclick="saveKlub()">Simpan</button>
+        </div>
+    </div>
+</div>
+
+<!-- ============ POPUP: TAMBAH/EDIT PERTANDINGAN ============ -->
+<div class="modal-bg" id="mMatch">
+    <div class="modal-box">
+        <button class="modal-x" onclick="closeModal('mMatch')">&times;</button>
+        <div class="modal-title" id="matchTitle">Tambah Pertandingan</div>
+        <span class="form-label">Pilih Klub</span>
+        <div class="form-row">
+            <div class="fg">
+                <label>Klub Home</label>
+                <select id="mHome"><option value="">-- Pilih Klub --</option></select>
+            </div>
+            <div class="fg">
+                <label>Klub Away</label>
+                <select id="mAway"><option value="">-- Pilih Klub --</option></select>
+            </div>
+        </div>
+        <div class="divider"></div>
+        <span class="form-label">Detail Pertandingan</span>
+        <div class="form-row">
+            <div class="fg"><label>Babak</label><input type="text" id="mBabak" placeholder="Semifinal"></div>
+            <div class="fg"><label>Kategori</label><input type="text" id="mKat" placeholder="U-15"></div>
+        </div>
+        <div class="modal-foot">
+            <button class="btn" onclick="closeModal('mMatch')">Batal</button>
+            <button class="btn btn-green" onclick="saveMatch()">Simpan</button>
+        </div>
+    </div>
+</div>
+
+<!-- ============ POPUP: KONFIRMASI HAPUS PERTANDINGAN ============ -->
+<div class="modal-bg" id="mDel">
+    <div class="modal-box modal-sm">
+        <button class="modal-x" onclick="closeModal('mDel')">&times;</button>
+        <div class="modal-title">Hapus Pertandingan</div>
+        <p style="font-size:0.9rem; color:#bbb; margin-bottom:4px;">Yakin ingin menghapus pertandingan ini?</p>
+        <div class="del-preview" id="delPrev"></div>
+        <div class="modal-foot">
+            <button class="btn" onclick="closeModal('mDel')">Batal</button>
+            <button class="btn btn-dark-red" onclick="doDelete()">Hapus</button>
+        </div>
+    </div>
+</div>
+
+<!-- ============ POPUP: KONFIRMASI HAPUS KLUB ============ -->
+<div class="modal-bg" id="mDelKlub">
+    <div class="modal-box modal-sm">
+        <button class="modal-x" onclick="closeModal('mDelKlub')">&times;</button>
+        <div class="modal-title">Hapus Klub</div>
+        <p style="font-size:0.9rem; color:#bbb; margin-bottom:4px;">Yakin ingin menghapus klub ini? Pertandingan yang menggunakan klub ini juga akan ikut terhapus.</p>
+        <div class="del-preview" id="delPrevKlub"></div>
+        <div class="modal-foot">
+            <button class="btn" onclick="closeModal('mDelKlub')">Batal</button>
+            <button class="btn btn-dark-red" onclick="doDeleteKlub()">Hapus</button>
+        </div>
+    </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>

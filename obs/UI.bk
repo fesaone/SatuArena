@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Workspace</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f0f1f5;
+    --card: #ffffff;
+    --border: #e5e7eb;
+    --text: #171717;
+    --text2: #374151;
+    --muted: #6b7280;
+    --faint: #9ca3af;
+    --surface: #f9fafb;
+    --hover: #f3f4f6;
+    --green: #16a34a;
+    --green-bg: #f0fdf4;
+    --green-bd: #bbf7d0;
+    --amber: #d97706;
+    --amber-bg: #fffbeb;
+    --amber-bd: #fde68a;
+    --red: #dc2626;
+    --red-bg: #fef2f2;
+    --red-bd: #fecaca;
+    --r: 8px;
+    --rl: 12px;
+    --sh: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    margin: 0;
+    padding: 24px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .box {
+    max-width: 640px;
+    margin: 40px auto;
+    border: 1px solid var(--border);
+    border-radius: var(--rl);
+    background: var(--card);
+    box-shadow: var(--sh);
+    overflow: hidden;
+  }
+
+  .box-header, .box-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 24px;
+  }
+
+  .box-header { border-bottom: 1px solid var(--border); }
+  .box-footer { background: var(--surface); border-top: 1px solid var(--border); }
+
+  .header-title { font-size: .9375rem; font-weight: 600; margin: 0; }
+
+  /* Badge */
+  .badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: .75rem; font-weight: 500;
+    padding: 4px 10px; border-radius: 999px;
+  }
+  .badge.green  { color: var(--green); background: var(--green-bg); border: 1px solid var(--green-bd); }
+  .badge.amber  { color: var(--amber); background: var(--amber-bg); border: 1px solid var(--amber-bd); }
+  .badge-dot { width: 6px; height: 6px; border-radius: 50%; }
+  .badge.green .badge-dot  { background: var(--green); }
+  .badge.amber .badge-dot  { background: var(--amber); }
+
+  /* Tabs */
+  .tabs { border-bottom: 1px solid var(--border); padding: 0 24px; display: flex; }
+
+  .tab {
+    padding: 12px 16px; font-size: .8125rem; font-weight: 500;
+    color: var(--muted); background: none; border: none;
+    border-bottom: 2px solid transparent; cursor: pointer;
+    transition: color 150ms, border-color 150ms; margin-bottom: -1px;
+  }
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--text); border-bottom-color: var(--text); }
+
+  /* Panel */
+  .panel { display: none; padding: 24px; animation: fadeUp 200ms ease; }
+  .panel.active { display: block; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(4px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Text helpers */
+  .label {
+    font-size: .7rem; font-weight: 500; color: var(--muted);
+    text-transform: uppercase; letter-spacing: .05em; margin: 0 0 8px;
+  }
+  .desc { font-size: .7rem; color: var(--faint); margin: 0 0 16px; line-height: 1.5; }
+
+  /* Stat row */
+  .stat-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 24px; }
+  .stat {
+    padding: 14px 12px; border: 1px solid var(--border); border-radius: var(--r);
+    background: var(--card); text-align: center;
+  }
+  .stat-val { font-size: 1.25rem; font-weight: 600; margin: 0 0 2px; }
+  .stat-lbl { font-size: .65rem; color: var(--muted); margin: 0; text-transform: uppercase; letter-spacing: .03em; }
+
+  /* Buttons */
+  .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 24px; }
+  .grid.c3 { grid-template-columns: repeat(3, 1fr); }
+  .grid.c2 { grid-template-columns: repeat(2, 1fr); }
+  .grid.m0 { margin-bottom: 0; }
+
+  .btn {
+    width: 100%; padding: 9px 16px;
+    border: 1px solid var(--border); border-radius: var(--r);
+    background: var(--card); color: var(--text);
+    font: 500 .8rem/1 var(--font); cursor: pointer;
+    transition: all 150ms cubic-bezier(.4,0,.2,1); box-shadow: var(--sh);
+  }
+  .btn:hover { background: var(--surface); border-color: #d1d5db; }
+  .btn:active { background: var(--hover); transform: scale(.98); }
+  .btn.on { background: var(--text); border-color: var(--text); color: #fff; box-shadow: none; }
+  .btn.on:hover { background: #404040; border-color: #404040; }
+
+  /* Collapsible */
+  .acc { border: 1px solid var(--border); border-radius: var(--r); margin-bottom: 12px; overflow: hidden; }
+
+  .acc-head {
+    width: 100%; padding: 14px 16px; background: var(--card); border: none;
+    display: flex; justify-content: space-between; align-items: center;
+    font: 500 .875rem/1 var(--font); color: var(--text);
+    cursor: pointer; transition: background 150ms;
+  }
+  .acc-head:hover { background: var(--surface); }
+
+  .acc-icon {
+    width: 16px; height: 16px; color: var(--muted);
+    transition: transform 200ms ease; flex-shrink: 0;
+  }
+
+  .acc.open .acc-head { border-bottom: 1px solid var(--border); background: var(--surface); }
+  .acc.open .acc-icon { transform: rotate(180deg); }
+
+  .acc-body { max-height: 0; overflow: hidden; transition: max-height 300ms ease-out; }
+  .acc-inner { padding: 16px; }
+
+  /* Form */
+  .field { margin-bottom: 16px; }
+  .field:last-child { margin-bottom: 0; }
+
+  .field-label {
+    display: block; font-size: .8125rem; font-weight: 500;
+    margin-bottom: 6px; color: var(--text2);
+  }
+
+  .input, .textarea {
+    width: 100%; font: .875rem/1.4 var(--font);
+    color: var(--text); background: var(--card);
+    border: 1px solid var(--border); border-radius: var(--r);
+    outline: none; transition: border-color 150ms, box-shadow 150ms;
+  }
+  .input { padding: 8px 12px; }
+  .textarea { padding: 10px 12px; resize: vertical; min-height: 72px; }
+  .input:focus, .textarea:focus { border-color: var(--text); box-shadow: 0 0 0 3px rgba(0,0,0,.05); }
+
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  .btn-primary {
+    width: 100%; padding: 10px 16px;
+    border: none; border-radius: var(--r);
+    background: var(--text); color: #fff;
+    font: 500 .8125rem/1 var(--font); cursor: pointer;
+    transition: background 150ms, transform 150ms;
+  }
+  .btn-primary:hover { background: #404040; }
+  .btn-primary:active { transform: scale(.98); }
+
+  /* Inline toggle */
+  .inline-toggle {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 0; border-bottom: 1px solid var(--border);
+  }
+  .inline-toggle:last-child { border-bottom: none; }
+  .inline-toggle-text { font-size: .8125rem; color: var(--text2); }
+  .mini-toggle {
+    position: relative; width: 32px; height: 18px;
+    background: #d1d5db; border-radius: 999px;
+    cursor: pointer; transition: background 200ms; flex-shrink: 0;
+  }
+  .mini-toggle.on { background: var(--text); }
+  .mini-toggle-dot {
+    position: absolute; top: 2px; left: 2px;
+    width: 14px; height: 14px; background: #fff; border-radius: 50%;
+    transition: transform 200ms; box-shadow: 0 1px 2px rgba(0,0,0,.1);
+  }
+  .mini-toggle.on .mini-toggle-dot { transform: translateX(14px); }
+
+  /* Footer */
+  .footer-text { font-size: .75rem; color: var(--muted); margin: 0; }
+  .toggle-wrap { display: flex; align-items: center; gap: 8px; font: 500 .8125rem/1 var(--font); color: var(--text); }
+
+  .toggle {
+    position: relative; width: 36px; height: 20px;
+    background: #d1d5db; border-radius: 999px;
+    cursor: pointer; transition: background 200ms;
+  }
+  .toggle.on { background: var(--text); }
+  .toggle-dot {
+    position: absolute; top: 2px; left: 2px;
+    width: 16px; height: 16px; background: #fff; border-radius: 50%;
+    transition: transform 200ms; box-shadow: 0 1px 2px rgba(0,0,0,.1);
+  }
+  .toggle.on .toggle-dot { transform: translateX(16px); }
+
+  @media (max-width: 480px) {
+    body { padding: 16px; }
+    .box { margin: 24px auto; }
+    .box-header, .tabs { padding-left: 16px; padding-right: 16px; }
+    .panel { padding: 16px; }
+    .box-footer { padding: 14px 16px; flex-direction: column; align-items: flex-start; gap: 12px; }
+    .grid { grid-template-columns: repeat(2, 1fr) !important; gap: 8px; }
+    .stat-row { grid-template-columns: 1fr; }
+    .row { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="box" id="app">
+  <!-- Header -->
+  <div class="box-header">
+    <h2 class="header-title">Workspace</h2>
+    <div class="badge green"><span class="badge-dot"></span>Aktif</div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab active" data-tab="tab-ringkasan">Ringkasan</button>
+    <button class="tab" data-tab="tab-transaksi">Transaksi</button>
+    <button class="tab" data-tab="tab-pengaturan">Pengaturan</button>
+  </div>
+
+  <!-- ==================== RINGKASAN ==================== -->
+  <div id="tab-ringkasan" class="panel active">
+    <!-- Statistik cepat -->
+    <div class="stat-row">
+      <div class="stat">
+        <p class="stat-val">24</p>
+        <p class="stat-lbl">Total Tugas</p>
+      </div>
+      <div class="stat">
+        <p class="stat-val">8</p>
+        <p class="stat-lbl">Selesai</p>
+      </div>
+      <div class="stat">
+        <p class="stat-val">3</p>
+        <p class="stat-lbl">Terlambat</p>
+      </div>
+    </div>
+
+    <!-- Filter status -->
+    <p class="label">Filter Status</p>
+    <div class="grid c3">
+      <button class="btn on">Semua</button>
+      <button class="btn">Aktif</button>
+      <button class="btn">Selesai</button>
+    </div>
+
+    <!-- Aksi cepat -->
+    <p class="label">Aksi Cepat</p>
+    <div class="grid m0">
+      <button class="btn">+ Tugas</button>
+      <button class="btn">+ Catatan</button>
+      <button class="btn">Arsip</button>
+      <button class="btn">Ekspor</button>
+    </div>
+
+    <!-- Collapsible: Detail Aktivitas -->
+    <div style="height: 16px"></div>
+    <div class="acc" data-acc="aktivitas-terkini">
+      <button class="acc-head">
+        <span>Aktivitas Terkini</span>
+        <svg class="acc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/></svg>
+      </button>
+      <div class="acc-body">
+        <div class="acc-inner">
+          <p class="desc" style="margin-top:0">Log aktivitas 24 jam terakhir secara otomatis tercatat di sini.</p>
+          <div style="font-size:.8rem; color:var(--text2); line-height:2">
+            <div style="display:flex;justify-content:space-between;border-bottom:1px solid var(--border);padding:6px 0">
+              <span>Desain halaman landing selesai</span>
+              <span style="color:var(--faint);font-size:.7rem;white-space:nowrap;margin-left:12px">14:32</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;border-bottom:1px solid var(--border);padding:6px 0">
+              <span>Tambah 3 item ke backlog sprint</span>
+              <span style="color:var(--faint);font-size:.7rem;white-space:nowrap;margin-left:12px">11:08</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:6px 0">
+              <span>Review pull request #47</span>
+              <span style="color:var(--faint);font-size:.7rem;white-space:nowrap;margin-left:12px">09:15</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Collapsible: Prioritas -->
+    <div class="acc" data-acc="prioritas-hari-ini">
+      <button class="acc-head">
+        <span>Prioritas Hari Ini</span>
+        <svg class="acc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/></svg>
+      </button>
+      <div class="acc-body">
+        <div class="acc-inner">
+          <p class="desc" style="margin-top:0">Atur urutan prioritas tugas yang harus diselesaikan hari ini.</p>
+          <div class="field">
+            <label class="field-label">Tugas Prioritas 1</label>
+            <input type="text" class="input" placeholder="Misal: Fix bug login" value="Finalisasi laporan bulanan">
+          </div>
+          <div class="field">
+            <label class="field-label">Tugas Prioritas 2</label>
+            <input type="text" class="input" placeholder="Misal: Update dokumentasi" value="Meeting dengan klien jam 15:00">
+          </div>
+          <div class="field">
+            <label class="field-label">Tugas Prioritas 3</label>
+            <input type="text" class="input" placeholder="Tambah tugas...">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== TRANSAKSI ==================== -->
+  <div id="tab-transaksi" class="panel">
+    <!-- Kategori -->
+    <p class="label">Kategori</p>
+    <div class="grid">
+      <button class="btn on">Pemasukan</button>
+      <button class="btn">Pengeluaran</button>
+      <button class="btn">Transfer</button>
+      <button class="btn">Lainnya</button>
+    </div>
+
+    <!-- Form Transaksi -->
+    <div class="acc open" data-acc="form-transaksi">
+      <button class="acc-head">
+        <span>Detail Transaksi</span>
+        <svg class="acc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/></svg>
+      </button>
+      <div class="acc-body">
+        <div class="acc-inner">
+          <div class="field">
+            <label class="field-label">Judul Transaksi</label>
+            <input type="text" class="input" placeholder="Misal: Gaji bulan Juni">
+          </div>
+          <div class="row">
+            <div class="field">
+              <label class="field-label">Jumlah (Rp)</label>
+              <input type="number" class="input" placeholder="0">
+            </div>
+            <div class="field">
+              <label class="field-label">Tanggal</label>
+              <input type="date" class="input">
+            </div>
+          </div>
+          <div class="field">
+            <label class="field-label">Keterangan</label>
+            <textarea class="textarea" placeholder="Tambahkan catatan jika diperlukan..."></textarea>
+          </div>
+          <button class="btn-primary">Simpan Transaksi</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Riwayat -->
+    <div style="height: 4px"></div>
+    <div class="acc" data-acc="riwayat-transaksi">
+      <button class="acc-head">
+        <span>Riwayat Transaksi</span>
+        <svg class="acc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/></svg>
+      </button>
+      <div class="acc-body">
+        <div class="acc-inner">
+          <div style="font-size:.8rem; color:var(--text2); line-height:2">
+            <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);padding:6px 0">
+              <div>
+                <div style="font-weight:500">Gaji Juni</div>
+                <div style="font-size:.7rem;color:var(--faint)">1 Jun 2025</div>
+              </div>
+              <span style="color:var(--green);font-weight:600">+Rp 8.500.000</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);padding:6px 0">
+              <div>
+                <div style="font-weight:500">Langganan hosting</div>
+                <div style="font-size:.7rem;color:var(--faint)">3 Jun 2025</div>
+              </div>
+              <span style="color:var(--red);font-weight:600">-Rp 350.000</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0">
+              <div>
+                <div style="font-weight:500">Freelance desain logo</div>
+                <div style="font-size:.7rem;color:var(--faint)">5 Jun 2025</div>
+              </div>
+              <span style="color:var(--green);font-weight:600">+Rp 2.000.000</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== PENGATURAN ==================== -->
+  <div id="tab-pengaturan" class="panel">
+    <!-- Collapsible: Umum -->
+    <div class="acc" data-acc="set-umum">
+      <button class="acc-head">
+        <span>Umum</span>
+        <svg class="acc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/></svg>
+      </button>
+      <div class="acc-body">
+        <div class="acc-inner">
+          <div class="field">
+            <label class="field-label">Nama Workspace</label>
+            <input type="text" class="input" value="Proyek Pribadi">
+          </div>
+          <div class="row">
+            <div class="field">
+              <label class="field-label">Zona Waktu</label>
+              <select class="input">
+                <option>WIB (UTC+7)</option>
+                <option>WITA (UTC+8)</option>
+                <option>WIT (UTC+9)</option>
+              </select>
+            </div>
+            <div class="field">
+              <label class="field-label">Bahasa</label>
+              <select class="input">
+                <option>Bahasa Indonesia</option>
+                <option>English</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Collapsible: Notifikasi -->
+    <div class="acc" data-acc="set-notifikasi">
+      <button class="acc-head">
+        <span>Notifikasi</span>
+        <svg class="acc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/></svg>
+      </button>
+      <div class="acc-body">
+        <div class="acc-inner">
+          <p class="desc" style="margin-top:0">Atur preferensi notifikasi untuk setiap jenis aktivitas.</p>
+          <div class="inline-toggle">
+            <span class="inline-toggle-text">Tugas mendekati tenggat</span>
+            <div class="mini-toggle on" data-toggle="notif-deadline"><div class="mini-toggle-dot"></div></div>
+          </div>
+          <div class="inline-toggle">
+            <span class="inline-toggle-text">Transaksi masuk / keluar</span>
+            <div class="mini-toggle on" data-toggle="notif-transaksi"><div class="mini-toggle-dot"></div></div>
+          </div>
+          <div class="inline-toggle">
+            <span class="inline-toggle-text">Update dari anggota tim</span>
+            <div class="mini-toggle" data-toggle="notif-tim"><div class="mini-toggle-dot"></div></div>
+          </div>
+          <div class="inline-toggle">
+            <span class="inline-toggle-text">Ringkasan harian melalui email</span>
+            <div class="mini-toggle" data-toggle="notif-email"><div class="mini-toggle-dot"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Collapsible: Keamanan -->
+    <div class="acc" data-acc="set-keamanan">
+      <button class="acc-head">
+        <span>Keamanan</span>
+        <svg class="acc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/></svg>
+      </button>
+      <div class="acc-body">
+        <div class="acc-inner">
+          <div class="field">
+            <label class="field-label">Password Saat Ini</label>
+            <input type="password" class="input" placeholder="Masukkan password lama">
+          </div>
+          <div class="row">
+            <div class="field">
+              <label class="field-label">Password Baru</label>
+              <input type="password" class="input" placeholder="Minimal 8 karakter">
+            </div>
+            <div class="field">
+              <label class="field-label">Konfirmasi Password</label>
+              <input type="password" class="input" placeholder="Ulangi password baru">
+            </div>
+          </div>
+          <button class="btn-primary" style="margin-top:4px">Perbarui Password</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="box-footer">
+    <p class="footer-text">Sync Activity</p>
+    <div class="toggle-wrap">
+      <span>Auto-sync</span>
+      <div class="toggle on" id="syncToggle"><div class="toggle-dot"></div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const KEY = 'ui_sync_state';
+  const app = document.getElementById('app');
+  const syncEl = document.getElementById('syncToggle');
+
+  const isOn = () => syncEl.classList.contains('on');
+
+  /* ---- Capture & Save ---- */
+  function capture() {
+    const activeTab = (app.querySelector('.tab.active') || {}).dataset?.tab || 'tab-ringkasan';
+    const collapses = {};
+    app.querySelectorAll('.panel').forEach(p => {
+      collapses[p.id] = [...p.querySelectorAll('.acc.open')].map(a => a.dataset.acc);
+    });
+    // Simpan juga state mini-toggle & button grid
+    const toggles = {};
+    app.querySelectorAll('.mini-toggle').forEach(t => {
+      toggles[t.dataset.toggle] = t.classList.contains('on');
+    });
+    const btnGrids = {};
+    app.querySelectorAll('.panel').forEach(p => {
+      btnGrids[p.id] = [...p.querySelectorAll('.grid')].map(g => {
+        const activeBtn = g.querySelector('.btn.on');
+        return activeBtn ? [...g.children].indexOf(activeBtn) : -1;
+      });
+    });
+    return { activeTab, collapses, toggles, btnGrids };
+  }
+
+  function save() {
+    if (!isOn()) return;
+    sessionStorage.setItem(KEY, JSON.stringify(capture()));
+  }
+
+  /* ---- Apply State ---- */
+  function apply(s) {
+    if (!s) return;
+
+    // Tab
+    app.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === s.activeTab));
+    app.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.id === s.activeTab));
+
+    requestAnimationFrame(() => {
+      // Collapse per panel
+      app.querySelectorAll('.panel').forEach(p => {
+        const saved = s.collapses[p.id] || [];
+        p.querySelectorAll('.acc').forEach(a => {
+          const body = a.querySelector('.acc-body');
+          const shouldOpen = saved.includes(a.dataset.acc);
+          a.classList.toggle('open', shouldOpen);
+          body.style.maxHeight = shouldOpen ? body.scrollHeight + 'px' : '0px';
+        });
+      });
+
+      // Mini toggles
+      if (s.toggles) {
+        Object.entries(s.toggles).forEach(([key, val]) => {
+          const el = app.querySelector(`.mini-toggle[data-toggle="${key}"]`);
+          if (el) el.classList.toggle('on', val);
+        });
+      }
+
+      // Button grids per panel
+      if (s.btnGrids) {
+        Object.entries(s.btnGrids).forEach(([panelId, indices]) => {
+          const panel = document.getElementById(panelId);
+          if (!panel) return;
+          const grids = panel.querySelectorAll('.grid');
+          indices.forEach((idx, i) => {
+            if (grids[i] && idx >= 0) {
+              grids[i].querySelectorAll('.btn').forEach((b, j) => b.classList.toggle('on', j === idx));
+            }
+          });
+        });
+      }
+    });
+  }
+
+  /* ---- Reset ---- */
+  function reset() {
+    app.querySelector('.tab').classList.add('active');
+    app.getElementById('tab-ringkasan').classList.add('active');
+    app.querySelectorAll('.acc').forEach(a => {
+      a.classList.remove('open');
+      a.querySelector('.acc-body').style.maxHeight = '0px';
+    });
+    app.querySelectorAll('.mini-toggle').forEach(t => t.classList.remove('on'));
+    app.querySelectorAll('.grid').forEach(g => {
+      g.querySelectorAll('.btn').forEach((b, i) => b.classList.toggle('on', i === 0));
+    });
+  }
+
+  /* ---- Recalculate open collapse heights (after content change) ---- */
+  function recalcHeights() {
+    app.querySelectorAll('.acc.open').forEach(a => {
+      const body = a.querySelector('.acc-body');
+      body.style.maxHeight = body.scrollHeight + 'px';
+    });
+  }
+
+  /* ---- Event Delegation ---- */
+
+  // Tab
+  app.querySelector('.tabs').addEventListener('click', e => {
+    const t = e.target.closest('.tab');
+    if (!t) return;
+    app.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+    app.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    t.classList.add('active');
+    document.getElementById(t.dataset.tab).classList.add('active');
+    save();
+  });
+
+  // Collapse
+  app.addEventListener('click', e => {
+    const head = e.target.closest('.acc-head');
+    if (!head) return;
+    const acc = head.parentElement;
+    const body = acc.querySelector('.acc-body');
+    const opening = !acc.classList.contains('open');
+    acc.classList.toggle('open', opening);
+    body.style.maxHeight = opening ? body.scrollHeight + 'px' : '0px';
+    save();
+  });
+
+  // Button grid
+  app.addEventListener('click', e => {
+    const btn = e.target.closest('.btn');
+    if (!btn || btn.closest('.acc-head') || btn.closest('.box-footer')) return;
+    const grid = btn.closest('.grid');
+    if (!grid) return;
+    grid.querySelectorAll('.btn').forEach(b => b.classList.remove('on'));
+    btn.classList.add('on');
+    save();
+  });
+
+  // Mini toggle (pengaturan notifikasi)
+  app.addEventListener('click', e => {
+    const mt = e.target.closest('.mini-toggle');
+    if (!mt) return;
+    mt.classList.toggle('on');
+    save();
+  });
+
+  // Form input
+  app.addEventListener('input', e => {
+    if (e.target.matches('.input, .textarea')) {
+      // Perbarui height collapse yang sedang terbuka (karena konten berubah)
+      recalcHeights();
+      save();
+    }
+  });
+
+  // Sync toggle
+  syncEl.addEventListener('click', () => {
+    syncEl.classList.toggle('on');
+    if (isOn()) {
+      save();
+    } else {
+      sessionStorage.removeItem(KEY);
+      app.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      app.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+      app.querySelectorAll('.btn').forEach(b => b.classList.remove('on'));
+      reset();
+    }
+  });
+
+  /* ---- Init ---- */
+  document.addEventListener('DOMContentLoaded', () => {
+    if (!isOn()) return;
+    const raw = sessionStorage.getItem(KEY);
+    if (raw) {
+      try { apply(JSON.parse(raw)); } catch { save(); }
+    } else {
+      save();
+    }
+  });
+</script>
+</body>
+</html>

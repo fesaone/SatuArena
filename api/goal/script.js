@@ -1,0 +1,140 @@
+// ====== CONSTANTS & STATE ======
+const STORAGE_DATA = 'football_score_state';
+
+// ====== INIT ======
+// Render pertama kali saat halaman dibuka
+renderScore();
+
+// ====== CORE LOGIC ======
+
+/**
+ * Mengambil data skor & fouls terbaru dari localStorage
+ */
+function getScoreState() {
+  const raw = localStorage.getItem(STORAGE_DATA);
+  if (!raw) {
+    // Default state jika belum ada data (sudah termasuk fouls)
+    return { home: 0, away: 0, foulsHome: 0, foulsAway: 0 };
+  }
+  // Fallback jika data lama tidak memiliki properti fouls
+  const parsed = JSON.parse(raw);
+  return {
+    home: parsed.home || 0,
+    away: parsed.away || 0,
+    foulsHome: parsed.foulsHome || 0,
+    foulsAway: parsed.foulsAway || 0
+  };
+}
+
+/**
+ * Menyimpan data baru ke localStorage
+ * Ini akan memicu event 'storage' di tab lain
+ */
+function saveScoreState(newState) {
+  localStorage.setItem(STORAGE_DATA, JSON.stringify(newState));
+  // Update tampilan di tab pengirim segera
+  renderScore();
+}
+
+// ====== RENDER ENGINE ======
+
+function renderScore() {
+  const state = getScoreState();
+  
+  // Update semua elemen Goal Home
+  const homeEls = document.querySelectorAll('[data-goal="home"]');
+  homeEls.forEach(el => {
+    if (el.textContent != state.home) {
+      el.textContent = state.home;
+    }
+  });
+
+  // Update semua elemen Goal Away
+  const awayEls = document.querySelectorAll('[data-goal="away"]');
+  awayEls.forEach(el => {
+    if (el.textContent != state.away) {
+      el.textContent = state.away;
+    }
+  });
+
+  // Update semua elemen Fouls Home
+  const foulsHomeEls = document.querySelectorAll('[data-fouls="home"]');
+  foulsHomeEls.forEach(el => {
+    if (el.textContent != state.foulsHome) {
+      el.textContent = state.foulsHome;
+    }
+  });
+
+  // Update semua elemen Fouls Away
+  const foulsAwayEls = document.querySelectorAll('[data-fouls="away"]');
+  foulsAwayEls.forEach(el => {
+    if (el.textContent != state.foulsAway) {
+      el.textContent = state.foulsAway;
+    }
+  });
+}
+
+// ====== CONTROLS (Actions) ======
+
+/**
+ * Fungsi untuk mengubah skor
+ * @param {string} team - 'home' atau 'away'
+ * @param {number} amount - 1 (tambah) atau -1 (kurang)
+ */
+function controlScore(team, amount) {
+  const currentState = getScoreState();
+  
+  // Validasi skor tidak boleh negatif
+  let newScore = currentState[team] + amount;
+  if (newScore < 0) newScore = 0;
+
+  // Buat state baru
+  const newState = {
+    ...currentState,
+    [team]: newScore
+  };
+
+  saveScoreState(newState);
+}
+
+/**
+ * Fungsi untuk mengubah jumlah fouls
+ * @param {string} team - 'home' atau 'away'
+ * @param {number} amount - 1 (tambah) atau -1 (kurang)
+ */
+function controlFouls(team, amount) {
+  const currentState = getScoreState();
+  
+  // Tentukan key yang benar berdasarkan tim
+  const key = team === 'home' ? 'foulsHome' : 'foulsAway';
+  
+  // Validasi fouls tidak boleh negatif
+  let newFouls = currentState[key] + amount;
+  if (newFouls < 0) newFouls = 0;
+
+  // Buat state baru
+  const newState = {
+    ...currentState,
+    [key]: newFouls
+  };
+
+  saveScoreState(newState);
+}
+
+function resetScore() {
+  // Reset semua termasuk fouls
+  const newState = { home: 0, away: 0, foulsHome: 0, foulsAway: 0 };
+  saveScoreState(newState);
+}
+
+// ====== SYNC LISTENER ======
+
+/**
+ * Event listener untuk menangkap perubahan dari Tab lain (Halaman A -> Halaman B)
+ */
+window.addEventListener('storage', (e) => {
+  if (e.key === STORAGE_DATA) {
+    // Data diubah di tab lain, update tampilan tab ini
+    renderScore();
+  }
+});

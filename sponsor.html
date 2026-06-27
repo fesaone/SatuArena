@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sponsored By – OBS Overlay</title>
+    <style>
+        /* ─── Design Tokens ────────────────────────────────── */
+        :root {
+            --gold:       #C8A44A;
+            --gold-light: #F0CC6E;
+            --gold-glow:  rgba(200, 164, 74, 0.45);
+            --gold-faint: rgba(200, 164, 74, 0.12);
+            --panel:      rgba(7, 13, 42, 0.92);
+            --border:     rgba(200, 164, 74, 0.28);
+            --text:       rgba(210, 175, 88, 0.75);
+            --separator:  rgba(200, 164, 74, 0.18);
+        }
+
+        /* ─── Reset ─────────────────────────────────────────── */
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            /* Preview background – remove/ignore in OBS */
+            background-color: #111827;
+            background-image: url(https://etempahan.psdklpp.gov.my/files/fs_location_photos/9150b8ca22c172f254a5e4808849360f334edc648973e462ab0fc84b8dbbd674.jpg);
+            background-size: cover;
+            background-position: bottom center;
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        /* ─── Main Bar ──────────────────────────────────────── */
+        .sponsored-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: var(--panel);
+            backdrop-filter: blur(28px) saturate(1.6);
+            -webkit-backdrop-filter: blur(28px) saturate(1.6);
+            border-top: 1px solid var(--border);
+            /* Soft inner glow at top edge */
+            box-shadow:
+                0 -1px 0 0 rgba(200, 164, 74, 0.08),
+                inset 0 1px 0 0 rgba(255, 255, 255, 0.04);
+            padding: 13px 60px 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 11px;
+            z-index: 9999;
+
+            transform: translateY(100%);
+            animation: slideUp 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.4s forwards;
+        }
+
+        /* ─── Gold Shimmer Line ─────────────────────────────── */
+        .sponsored-bar::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(
+                90deg,
+                transparent       0%,
+                var(--gold-faint)  8%,
+                var(--gold)       30%,
+                var(--gold-light) 50%,
+                var(--gold)       70%,
+                var(--gold-faint) 92%,
+                transparent       100%
+            );
+            background-size: 300% 100%;
+            animation: shimmer 5s ease-in-out infinite;
+        }
+
+        @keyframes shimmer {
+            0%   { background-position: 100% 0; opacity: 0.7; }
+            50%  { background-position:   0% 0; opacity: 1.0; }
+            100% { background-position: 100% 0; opacity: 0.7; }
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(100%); opacity: 0; }
+            to   { transform: translateY(0);    opacity: 1; }
+        }
+
+        /* ─── Label Row ─────────────────────────────────────── */
+        .label-row {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .label-line {
+            width: 48px;
+            height: 1px;
+            background: linear-gradient(to right, transparent, var(--gold));
+            opacity: 0.45;
+        }
+        .label-line.r {
+            background: linear-gradient(to left, transparent, var(--gold));
+        }
+
+        .sponsored-text {
+            color: var(--text);
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: 6px;
+            text-transform: uppercase;
+            /* Subtle glow on text */
+            text-shadow: 0 0 18px rgba(200, 164, 74, 0.3);
+        }
+
+        /* ─── Logo Row ──────────────────────────────────────── */
+        .logos-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            max-width: 1600px;
+        }
+
+        /* ─── Single Logo Item ──────────────────────────────── */
+        .logo-item {
+            flex: 1 1 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 66px;
+            padding: 8px 22px;
+            position: relative;
+
+            /* Staggered entrance */
+            opacity: 0;
+            animation: fadeUp 0.5s ease forwards;
+            animation-delay: calc(0.85s + var(--i) * 0.09s);
+        }
+
+        /* Vertical separator between logos */
+        .logo-item + .logo-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 18%;
+            height: 64%;
+            width: 1px;
+            background: linear-gradient(
+                to bottom,
+                transparent,
+                var(--separator) 30%,
+                var(--separator) 70%,
+                transparent
+            );
+        }
+
+        /* ─── Logo Image ─────────────────────────────────────── */
+        .logo-item img {
+            max-width: 100%;
+            max-height: 54px;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            filter:
+                brightness(0.92)
+                drop-shadow(0 1px 4px rgba(0, 0, 0, 0.4));
+            transition:
+                filter    0.45s ease,
+                transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        /* ─── Spotlight State ───────────────────────────────── */
+        .logo-item.spotlight {
+            /* Very subtle gold radial behind the active logo */
+            background: radial-gradient(
+                ellipse 60% 80% at center,
+                rgba(200, 164, 74, 0.07) 0%,
+                transparent 100%
+            );
+        }
+
+        .logo-item.spotlight img {
+            filter:
+                brightness(1.22)
+                drop-shadow(0 0 10px var(--gold-glow))
+                drop-shadow(0 1px 4px rgba(0, 0, 0, 0.3));
+            transform: scale(1.06) translateY(-1px);
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(14px); }
+            to   { opacity: 1; transform: translateY(0);    }
+        }
+
+        /* ─── Responsive ────────────────────────────────────── */
+        @media (max-width: 1600px) {
+            .logo-item { height: 58px; padding: 6px 16px; }
+            .logo-item img { max-height: 46px; }
+            .sponsored-bar { padding: 11px 40px 14px; }
+        }
+
+        @media (max-width: 1280px) {
+            .logo-item { height: 52px; padding: 6px 12px; }
+            .logo-item img { max-height: 40px; }
+            .sponsored-bar { padding: 10px 24px 12px; }
+            .sponsored-text { font-size: 8px; letter-spacing: 5px; }
+            .label-line { width: 36px; }
+        }
+
+        @media (max-width: 900px) {
+            .logos-wrapper { flex-wrap: wrap; gap: 0; }
+            .logo-item {
+                flex: 0 0 33.333%;
+                height: 48px;
+                padding: 6px 10px;
+            }
+            .logo-item::before { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="sponsored-bar">
+    <div class="label-row">
+        <div class="label-line"></div>
+        <span class="sponsored-text">Sponsored By</span>
+        <div class="label-line r"></div>
+    </div>
+    <div class="logos-wrapper" id="logosWrapper">
+        <!-- Rendered by JS -->
+    </div>
+</div>
+
+<script>
+    /* ──────────────────────────────────────────────────
+       KONFIGURASI: ganti path sesuai kebutuhan
+    ────────────────────────────────────────────────── */
+    const sponsors = [
+        '/sponsor/TRI.png',
+        '/sponsor/SATU ARENA.png',
+        '/sponsor/PADIMAS.png',
+        '/sponsor/MILS.png',
+        '/sponsor/Logo Hamori with JIH Group.png',
+        '/sponsor/KUKAME.png',
+        '/sponsor/INDOSAT.png',
+        '/sponsor/AFP2.png',
+        '/sponsor/AFP.png'
+    ];
+
+    /* ──────────────────────────────────────────────────
+       RENDER LOGOS
+    ────────────────────────────────────────────────── */
+    const wrapper = document.getElementById('logosWrapper');
+
+    sponsors.forEach((src, i) => {
+        const div = document.createElement('div');
+        div.className = 'logo-item';
+        div.style.setProperty('--i', i);
+        div.innerHTML = `<img src="${src}" alt="Sponsor ${i + 1}" draggable="false">`;
+        wrapper.appendChild(div);
+    });
+
+    /* ──────────────────────────────────────────────────
+       ROLLING SPOTLIGHT
+       Mulai setelah animasi masuk selesai (~2.5 dtk)
+    ────────────────────────────────────────────────── */
+    const SPOTLIGHT_DELAY  = 2600;   // ms sebelum mulai
+    const SPOTLIGHT_SPEED  = 2400;   // ms per logo
+
+    let spotIdx = 0;
+
+    function cycleSpotlight() {
+        const items = document.querySelectorAll('.logo-item');
+        items.forEach(el => el.classList.remove('spotlight'));
+        if (items[spotIdx]) items[spotIdx].classList.add('spotlight');
+        spotIdx = (spotIdx + 1) % items.length;
+    }
+
+    setTimeout(() => {
+        cycleSpotlight();
+        setInterval(cycleSpotlight, SPOTLIGHT_SPEED);
+    }, SPOTLIGHT_DELAY);
+</script>
+
+</body>
+</html>

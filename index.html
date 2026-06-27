@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FWC2026</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="scoreboard.css">
+    <style id="jersey-css-vars">
+    :root {
+        --jersey-home: #E63946;
+        --jersey-away: #103557;
+    }
+    </style>
+</head>
+<body>
+    <style>
+        .sub-brand {
+            max-width: 50px;
+            position: absolute;
+            top: -26px;
+            left: 14px;
+        }
+        .title {
+            --h-title: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            width: 100%;
+            height: var(--h-title);
+            left: 0;
+            right: 0;
+            color: #fff;
+            background-color: #00000090;
+            position: absolute;
+            top: calc(5px - var(--h-title));
+            font-family: "Open Sans" !important;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 9.5px;
+            padding: 0 10px;
+            padding-bottom: 5px;
+            border-radius: 8px 8px 0 0;
+            z-index: -1;
+
+            [data-time="round"] {
+                max-width: 0;
+                opacity: 0;
+                overflow: hidden;
+                transition: 0.6s ease-in-out;
+
+                &.active {
+                    opacity: 1;
+                    max-width: 100%;
+                }
+
+                &::before {
+                    content: '•';
+                    margin-right: 6px;
+                }
+            }
+        }
+        body.babak-1 [data-time="round"],
+        body.babak-2 [data-time="round"] {
+                opacity: 1;
+                max-width: 100%;
+        }
+        
+        .timeout {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: absolute;
+            width: fit-content;
+            bottom: -28px;
+            height: 20px;
+            color: #fff;
+            background-color: black;
+            padding: 0;
+            border-radius: 6px;
+            font-family: "Open Sans" !important;
+            font-size: 12px;
+            font-weight: bold;
+            z-index: -1;
+            overflow: hidden;
+
+            &.t-home,
+            &.t-away {
+                max-width: 300px;
+                transition: 0.6s ease-in-out;
+
+                &:not(:has(.active)) {
+                    max-width: 0;
+                }
+            }
+            &.t-home {
+                right: 0;
+            }
+
+            .text {
+                flex: 1;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 0 6px;
+            }
+            .to {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 0 6px;
+                color: #000;
+                background-color: #fff;
+                height: 100%;
+                border-radius: 6px;
+                border: 2px solid #000;
+                max-width: 100%;
+                opacity: 1;
+                transition: 0.3s ease-in-out;
+
+                &:not(:has(.active)) {
+                    max-width: 0;
+                    padding: 0;
+                    opacity: 0;
+                }
+            }
+            .arrow {
+                color: orange;
+                animation: push 1s ease-in-out infinite;
+            }
+        }
+        @keyframes push {
+            0%, 100% {opacity: 0;}
+            50% {opacity: 1;}
+        }
+
+        .fouls {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            height: 30px;
+            max-width: fit-content;
+            transition: 0.4s ease;
+            color: #fff;
+            background-color: var(--color-1);
+            margin-top: 33px;
+            padding: 0 12px;
+            border-radius: 0 0 8px 8px;
+            font-family: "Open Sans" !important;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 14px;
+            z-index: -1;
+            letter-spacing: 0;
+
+            small {
+                margin-top: 0;
+            }
+        }
+        body.babak-2,
+        body.full-time {    
+            .fouls,
+            .game,
+            .club,
+            .score {
+                flex-direction: row-reverse;
+            }
+        }
+    </style>
+    
+    <section class="fwc2026">
+        <div class="sub-brand"><img src="/SATU ARENA.png" alt=""></div>
+        <div class="time additional">+5</div>
+        <div class="time">
+            <span data-time="timer" data-timetext="singkat">00:00</span>
+            <sub data-time="addtionaltime">0</sub>
+        </div>
+        <div class="fwc2026-data">
+            <div class="box"></div>
+            <div class="game">
+                <div class="title">
+                    <div style="display: flex; gap: 2px;">
+                        <span data-event="name"></span>
+                        <span data-event="season"></span>
+                    </div>
+                    <span data-time="round">1ST</span>
+                </div>
+                <div class="club">
+                    <div class="logo"><img data-klub-logo="home" src="" alt="H"></div>
+                    <div class="jersey home"></div>
+                    <span class="name"><div data-klub-skt="home"></div></span>
+                    <div class="timeout t-home">
+                        <span class="text"><span class="arrow">▸</span>TIME OUT</span>
+                        <span class="to">
+                            <span data-time="timeout" data-to="home"></span>
+                        </span>
+                    </div>
+                </div>
+                <div class="score">
+                    <div class="goal"><span data-goal="home">0</span></div>
+                    <sub style="margin-top: -5px;">-</sub>
+                    <div class="goal"><span data-goal="away">0</span></div>                    
+                    <div class="fouls">
+                        <span><span data-fouls="home">0</span></span>
+                        <small>Fouls</small>
+                        <span><span data-fouls="away">0</span></span>
+                    </div>
+                </div>
+                <div class="club">
+                    <div class="timeout t-away">
+                        <span class="text"><span class="arrow">▸</span>TIME OUT</span>
+                        <span class="to">
+                            <span data-time="timeout" data-to="away"></span>
+                        </span>
+                    </div>
+                    <span class="name"><div data-klub-skt="away"></div></span>
+                    <div class="jersey away"></div>
+                    <div class="logo"><img data-klub-logo="away" src="" alt="A"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <style>
+        .footer {
+            position: absolute;
+            left: 50%;
+            bottom: 60px;
+            transform: translate(-50%, -50%);
+
+            .fwc2026-data {
+                height: 100px;
+                min-width: 1200px;
+                padding-bottom: 10px;
+
+                .game {
+                    padding: 0 18px;
+                    .club {
+                        flex: 1;
+                        gap: 18px;
+
+                        img {
+                            width: 70px;
+                        }
+                        .name {
+                            flex: 1;
+                            font-size: 50px;
+                        }
+                    }
+                    .score {
+                        font-size: 60px;
+                        gap: 18px;
+                        border-radius: 18px;
+                        padding: 0 18px;
+                    }
+                }
+            }
+            .fouls {
+                font-size: 25px;
+                height: 40px;
+                margin-top: 65px;
+            }
+        }
+    </style>
+    <section class="fwc2026 footer">
+        <div class="fwc2026-data">
+            <div class="box"></div>
+            <div class="game">
+                <div class="title">
+                    <div style="display: flex; gap: 2px;">
+                        <span data-event="name"></span>
+                        <span data-event="season"></span>
+                    </div>
+                    <span data-time="round">1ST</span>
+                </div>
+                <div class="club">
+                    <div class="logo"><img data-klub-logo="home" src="" alt="H"></div>
+                    <span class="name"><div data-klub-name="home"></div></span>
+                    <div class="timeout t-home">
+                        <span class="text"><span class="arrow">▸</span>TIME OUT</span>
+                        <span class="to">
+                            <span data-time="timeout" data-to="home"></span>
+                        </span>
+                    </div>
+                </div>
+                <div class="score">
+                    <div class="goal"><span data-goal="home">0</span></div>
+                    <sub style="margin-top: -5px;">-</sub>
+                    <div class="goal"><span data-goal="away">0</span></div>
+                </div>
+                <div class="club">
+                    <div class="timeout t-away">
+                        <span class="text"><span class="arrow">▸</span>TIME OUT</span>
+                        <span class="to">
+                            <span data-time="timeout" data-to="away"></span>
+                        </span>
+                    </div>
+                    <span class="name"><div data-klub-name="away"></div></span>
+                    <div class="logo"><img data-klub-logo="away" src="" alt="A"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+<!--ANIMASI WARNA-->
+<style>
+  .box {
+    --angle: 90deg;
+    --w-1: calc(25% - var(--angle));
+    position: absolute;
+    inset: 0;
+    background: 
+      linear-gradient(#fff, #fff) padding-box,
+      linear-gradient(
+        var(--angle), 
+        #E8147Eff 0% 25%,
+        #9e161a 25% 50%,
+        #c4ef48 50% 75%,
+        #997ada 75% 100%
+      ) border-box;
+    border: 15px solid transparent;
+    border-radius: 8px;
+  }
+</style>
+
+<script>
+  const boxes = document.querySelectorAll('.box');
+  
+  let startTime = null;
+  const JEDA = 25;
+  const DURASI_PUTAR = 3;
+  const TOTAL_SIKLUS = JEDA + DURASI_PUTAR;
+
+  function animate(currentTime) {
+    if (!startTime) startTime = currentTime;
+    
+    const waktuSiklus = ((currentTime - startTime) / 1000) % TOTAL_SIKLUS;
+    let angle = 90; 
+    
+    if (waktuSiklus >= JEDA) {
+      const progress = (waktuSiklus - JEDA) / DURASI_PUTAR;
+      angle += 360 * progress;
+    }
+    
+    // Looping untuk menerapkan sudut ke SETIAP box yang ditemukan
+    boxes.forEach(box => {
+      box.style.setProperty('--angle', angle + 'deg');
+    });
+    
+    requestAnimationFrame(animate);
+  }
+
+  requestAnimationFrame(animate);
+</script>
+
+
+<script src="/api/timer/script.js"></script>
+<script src="/api/klub/script.js"></script>
+<script src="/api/goal/script.js"></script>
+<script src="/api/jersey/script.js"></script>
+</body>
+</html>

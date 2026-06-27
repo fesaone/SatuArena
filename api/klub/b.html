@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>(B) Real-time Sync Football Data</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- =========================================================
+     BAGIAN DISPLAY (Wajib ada di Halaman A dan B)
+     Anda bebas mengubah susunan HTML & CSS di bawah ini.
+     Script akan secara otomatis mencari elemen berdasarkan 
+     data-event dan data-klub lalu mengisi datanya.
+     ========================================================= -->
+<section class="scorecard">
+    <div class="sc-header">
+        <img data-event="logo" src="" alt="Logo Event">
+        <div class="sc-header-text">
+            <div data-event="name"></div>
+            <div data-event="season"></div>
+        </div>
+    </div>
+    
+    <div class="sc-info">
+        <div data-event="babak"></div>
+        <div data-event="kategori"></div>
+    </div>
+
+    <div class="sc-body">
+        <div class="sc-team home">
+            <img data-klub-logo="home" src="" alt="H">
+            <div data-klub-skt="home"></div>
+            <div data-klub-name="home"></div>
+        </div>
+        <div class="sc-vs">VS</div>
+        <div class="sc-team away">
+            <img data-klub-logo="away" src="" alt="A">
+            <div data-klub-skt="away"></div>
+            <div data-klub-name="away"></div>
+        </div>
+    </div>
+</section>
+
+<script src="script.js"></script>
+</body>
+</html>

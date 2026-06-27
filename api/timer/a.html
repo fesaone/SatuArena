@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Real-time Sync Football Futsal Timer</title>
+    <style>
+        /* CSS Tambahan untuk menyembunyikan tombol ET & TO di mode yang tidak sesuai */
+        .et-controls,
+        .to-controls {
+            transition: opacity 0.3s;
+        }
+
+        .hide-et,
+        .hide-to {
+            display: none !important;
+        }
+    </style>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- Bagian DISPLAY (Wajib di Halaman A dan B) -->
+    <div data-time="timer">00:00</div>
+    <div data-time="timer">00:00</div>
+    <div data-time="timer">00:00</div>
+
+    <!-- Contoh Display data-timetext Banyak Elemen (Singkat) -->
+    <div data-time="timer" data-timetext="singkat">00:00</div>
+    <div data-time="timer" data-timetext="singkat">00:00</div>
+    <div data-time="timer" data-timetext="singkat">00:00</div>
+
+    <!-- Contoh Display Additional Time Banyak Elemen -->
+    <div data-time="addtionaltime"></div>
+    <div data-time="addtionaltime"></div>
+    <div data-time="addtionaltime"></div>
+
+    <!-- Contoh Display Babak Banyak Elemen: 1ST, 2ST, ET1, ET2 -->
+    <div data-time="round"></div>
+    <div data-time="round"></div>
+    <div data-time="round"></div>
+
+    <!-- Contoh Display Time Out Banyak Elemen -->
+    <div data-time="timeout"></div>
+    <div data-time="timeout"></div>
+    <div data-time="timeout"></div>
+    <br>
+    <br>
+
+    <!-- Bagian KONFIGURASI (Hanya Perlu di Halaman A, tapi tidak masalah ada di B) -->
+    <section class="timer-panel">
+        <div class="config-panel grid col-2">
+            <div class="full">
+                <label>Tipe Pertandingan:
+                    <select id="matchType">
+                        <option value="football">Sepak Bola (Waktu Maju)</option>
+                        <option value="futsal">Futsal (Waktu Mundur)</option>
+                    </select>
+                </label>
+            </div>
+            <label>Waktu Babak (menit):
+                <input type="number" id="halfTime" value="45">
+            </label>
+            <div id="etConfig">
+                <label>Extra Time (menit):
+                    <input type="number" id="etTime" value="15">
+                </label>
+            </div>
+            <div id="toConfig">
+                <label>Time Out (menit):
+                    <input type="number" id="toTime" value="1">
+                </label>
+            </div>
+        </div>
+        <hr class="hr">
+        <!-- Bagian KONTROL (Hanya Halaman A yang punya tombol ini) -->
+        <div class="control-panel grid">
+            <div class="grid col-4">
+                <button onclick="controlAction('startHalf1')">1ST</button>
+                <button onclick="controlAction('halfTime')">HT</button>
+                <button onclick="controlAction('startHalf2')">2ST</button>
+                <button onclick="controlAction('fullTime')">FT</button>
+            </div>
+            <!-- Bungkus tombol ET dengan class khusus -->
+            <div class="et-controls grid col-2" id="etControls">
+                <button onclick="controlAction('startET1')">Extra Time 1</button>
+                <button onclick="controlAction('startET2')">Extra Time 2</button>
+            </div>
+            <!-- Tombol Time Out Futsal -->
+            <div class="to-controls grid col-3" id="toControls">
+                <button onclick="controlAction('toHome')">Time Out (HOME)</button>
+                <button onclick="controlAction('toStop')">Stop Time Out</button>
+                <button onclick="controlAction('toAway')">Time Out (AWAY)</button>
+            </div>
+            <hr class="hr">
+            <button onclick="controlAction('resetMatch')">Reset</button>
+            <hr class="hr">
+            <div class="grid col-2">
+                <div class="grid col-3">
+                    <button onclick="adjustTime(5)">+5</button>
+                    <button onclick="adjustTime(10)">+10</button>
+                    <button onclick="adjustTime(20)">+20</button>
+                </div>
+                <div class="grid col-3">
+                    <button onclick="adjustTime(-5)">-5</button>
+                    <button onclick="adjustTime(-10)">-10</button>
+                    <button onclick="adjustTime(-20)">-20</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
